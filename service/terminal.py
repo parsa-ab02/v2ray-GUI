@@ -30,21 +30,21 @@ def enable_proxy():
 def disable_proxy():
     subprocess.run(["gsettings", "set", "org.gnome.system.proxy", "mode", "none"])
 
-v2ray_process = None
+process = None
 
 def enable_v2ray():
-    global v2ray_process
+    global process
 
-    v2ray_process = subprocess.Popen(["v2ray" , "run" , "-c", str(service.config.config_json)])
+    process = subprocess.Popen(["xray" , "run" , "-c", str(service.config.config_json)])
 
     enable_proxy()
 
 def disable_v2ray():
-    global v2ray_process
+    global process
 
-    if v2ray_process is not None:
-        v2ray_process.terminate()
-        v2ray_process = None
+    if process is not None:
+        process.terminate()
+        process = None
 
     disable_proxy()
 

@@ -113,5 +113,16 @@ class VlessProxy:
                     "type": "none"
                 }
             }
+        if self.type == "httpupgrade":
+            httpupgrade_settings = {
+                "path": self.path or "/"
+            }
+
+            if self.host:
+                httpupgrade_settings["host"] = self.host
+
+            outbound["streamSettings"]["httpupgradeSettings"] = httpupgrade_settings
+
+
 
         return [outbound]
