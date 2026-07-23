@@ -33,6 +33,20 @@ def get_proxy_class(scheme: str):
 
     return proxy_class
 
+def get_system_outbounds() -> list[dict]:
+    return [
+        {
+            "tag": "direct",
+            "protocol": "freedom",
+            "settings": {},
+        },
+        {
+            "tag": "block",
+            "protocol": "blackhole",
+            "settings": {},
+        },
+    ]
+
 def build_outbound(raw_url: str) -> list:
     parsed_url = parse(raw_url)
 
@@ -40,4 +54,9 @@ def build_outbound(raw_url: str) -> list:
 
     proxy = proxy_class(parsed_url)
 
-    return proxy.get_outbound()
+    outbound = []
+
+    outbound.extend(proxy.get_outbound())
+    outbound.extend(get_system_outbounds())
+
+    return outbound
