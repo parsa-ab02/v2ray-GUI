@@ -21,7 +21,52 @@ def find_free_port(host, start_port):
 
     return port
 
-def get_inbounds():
+def Basic_sniffing():
+    return {
+        "sniffing": {
+            "enabled": True,
+            "destOverride": [
+                "http",
+                "tls",
+                "quic"
+            ],
+            "routeOnly": True
+        }
+    }
+
+def Privacy_sniffing():
+    return {
+        "sniffing": {
+            "enabled": False,
+        }
+    }
+def fakeDNS_sniffing():
+    return {
+        "sniffing": {
+            "enabled": True,
+            "destOverride": [
+                "fakedns",
+                "http",
+                "tls",
+                "quic"
+            ],
+            "routeOnly": False
+        }
+    }
+
+def Advanced_sniffing():
+    return {
+        "sniffing": {
+            "enabled": True,
+            "destOverride": [
+                "http",
+                "tls",
+                "quic"
+            ],
+            "routeOnly": False
+        }
+    }
+def get_inbounds(sniffing_profile=Basic_sniffing):
     host = os.getenv("XRAY_HOST", DEFAULT_HOST)
 
     socks_port = int(os.getenv("XRAY_SOCKS_PORT", DEFAULT_SOCKS_PORT))
@@ -42,13 +87,15 @@ def get_inbounds():
             "protocol": "socks",
             "settings": {
                 "udp": True
-            }
+            },
+            **sniffing_profile(),
         },
         {
             "tag": "http-in",
             "listen": host,
             "port": http_port,
             "protocol": "http",
-            "settings": {}
+            "settings": {},
+            **sniffing_profile(),
         }
     ]
