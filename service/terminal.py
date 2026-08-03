@@ -1,6 +1,8 @@
 import json
 import subprocess
 import service
+import time
+import requests
 
 
 def get_socks_inbound_from_config():
@@ -50,3 +52,21 @@ def disable_v2ray():
 
 def test():
     subprocess.run(["v2ray" , "test" , "-c" , str(service.config.config_json)])
+
+def ping():
+    try:
+        start_time = time.perf_counter()
+
+        requests.get(
+            "https://www.gstatic.com/generate_204",
+            proxies={
+                "http":"socks5h://127.0.0.1:1080",
+                "https":"socks5h://127.0.0.1:1080",
+            },
+            timeout=10,
+            stream=True
+        )
+
+        return (time.perf_counter()-start_time)*1000
+    except requests.RequestException:
+        return -1
