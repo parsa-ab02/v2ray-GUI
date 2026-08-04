@@ -29,6 +29,18 @@ class Config:
             "outbounds": service.url_handler.build_outbound(self.raw_url),
             "routing": routing_settings
         }
+    
+    @classmethod
+    def from_url(cls, raw_url: str):
+        ...
+
+    @classmethod
+    def from_kwargs(cls, *args, **kwargs):
+        ...
+
+    @classmethod
+    def from_configuration(cls, configuration: str):
+        ...
 
     def write(self):
         try:
