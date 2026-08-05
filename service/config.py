@@ -29,18 +29,36 @@ class Config:
             "outbounds": service.url_handler.build_outbound(self.raw_url),
             "routing": routing_settings
         }
+
+    # def __init__(*args, **kwargs): 
+    #   this will be the main constructor...
+
     
     @classmethod
     def from_url(cls, raw_url: str):
-        ...
 
-    @classmethod
-    def from_kwargs(cls, *args, **kwargs):
-        ...
+        #extract *args
+        
+        # return cls(*args)
 
     @classmethod
     def from_configuration(cls, configuration: str):
-        ...
+        configuration_dict = json.load(configuration)
+        outbounds_list = configuration_dict["outbounds"]
+
+        #extract *args
+
+        #return cls(*args)
+
+    @classmethod
+    def from_file(cls, path: str):
+        with open(path, "r", encoding="utf-8") as file:
+            configuration_dict = json.load(file)
+            outbounds_list = configuration_dict["outbounds"]
+
+        #extract *args
+
+        #return cls(*args)
 
     def write(self):
         try:
