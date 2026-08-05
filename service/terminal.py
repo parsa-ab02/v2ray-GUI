@@ -50,23 +50,39 @@ def disable_v2ray():
 
     disable_proxy()
 
-def test():
-    subprocess.run(["v2ray" , "test" , "-c" , str(service.config.config_json)])
+def validator(path):
+    result = subprocess.run(["xray", "run", "-test", "-c", path])
+    #return result
 
-def ping():
+    #needs fixing to return correct value
+
+def ping(conf : config ,host: str, port: int):
     try:
+
+        # config.write(conf, path)
+        #
+        #if(validator(path) is False):
+        #    return -1
+        #
+        # enable_v2ray()
+
         start_time = time.perf_counter()
 
         requests.get(
             "https://www.gstatic.com/generate_204",
             proxies={
-                "http":"socks5h://127.0.0.1:1080",
-                "https":"socks5h://127.0.0.1:1080",
+                "http":f"socks5h://{host}:{port}",
+                "https":f"socks5h://{host}:{port}",
             },
-            timeout=10,
+            timeout=10, 
             stream=True
         )
 
         return (time.perf_counter()-start_time)*1000
     except requests.RequestException:
         return -1
+
+def ping_ALL(configs_list):
+    ...
+
+    #will run ping method with mutithreading for all ts in the list
