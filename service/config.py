@@ -53,7 +53,7 @@ class Config:
         ...
 
     @classmethod
-    def from_file(cls, path: str):
+    def from_file(cls, path):
         with open(path, "r", encoding="utf-8") as file:
             configuration_dict = json.load(file)
             outbounds_list = configuration_dict["outbounds"]
@@ -63,24 +63,27 @@ class Config:
         #return cls(*args)
         ...
 
-    def write(self):
+    @classmethod
+    def write(cls, config, path: str):
         try:
             data_dir.mkdir(parents=True, exist_ok=True)
 
-            with open(config_json, "w", encoding="utf-8") as file:
-                json.dump(self.structure, file, ensure_ascii=False, indent=4)
+            with open(path, "w", encoding="utf-8") as file:
+                json.dump(config.structure, file, ensure_ascii=False, indent=4)
 
         except Exception as e:
             return f"error: {e}"
-    
-    def remove(self):
+
+    @classmethod
+    def remove(cls, config):
         Config.config_list = [
             cfg for cfg in Config.config_list
-            if cfg.raw_url != self.raw_url
+            if cfg.raw_url != config.raw_url
         ]
 
-    def add(self):
-        Config.config_list.append(self)
+    @classmethod
+    def add(cls, config):
+        Config.config_list.append(config)
 
     @classmethod
     def read_all(cls):
