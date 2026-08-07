@@ -1,5 +1,8 @@
 import tkinter as tk
 import service.config , service.terminal
+from pathlib import Path
+
+root_file = Path(__file__).resolve().parent
 
 root = tk.Tk()
 
@@ -36,11 +39,11 @@ def make_config_frame(conf : service.config.Config):
     label = tk.Label(config_frame , text=conf.tag)
     label.place(x=2 , y=0 , height=25 , width=398)
 
-    select_button = tk.Button(config_frame, borderwidth=2 , relief="groove" , text="select" , command=conf.write)
+    select_button = tk.Button(config_frame, borderwidth=2 , relief="groove" , text="select" , command=lambda : service.config.Config.write(conf, root_file/"data"/"config.json"))
     select_button.place(x=400 , y=0 , height=25 , width=90)
 
     def removeFrame():
-        conf.remove()
+        service.config.Config.remove(conf)
         config_frame.destroy()
 
     delete_button = tk.Button(config_frame, borderwidth=2 , relief="groove" , text="delete" , command=removeFrame)
@@ -76,7 +79,7 @@ def add():
     
     try:
         conf = service.config.Config(url)
-        conf.add()
+        service.config.Config.add(conf)
     except Exception as e:
         return f'error : {e}'
     
