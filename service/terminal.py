@@ -56,7 +56,7 @@ def validator(path):
 
     #needs fixing to return correct value
 
-def ping(conf : config ,host: str, port: int):
+def ping(conf ,host: str, port: int):
     try:
 
         # config.write(conf, path)

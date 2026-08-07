@@ -36,10 +36,11 @@ class Config:
     
     @classmethod
     def from_url(cls, raw_url: str):
-
+        
         #extract *args
         
         # return cls(*args)
+        ...
 
     @classmethod
     def from_configuration(cls, configuration: str):
@@ -49,6 +50,7 @@ class Config:
         #extract *args
 
         #return cls(*args)
+        ...
 
     @classmethod
     def from_file(cls, path: str):
@@ -59,6 +61,7 @@ class Config:
         #extract *args
 
         #return cls(*args)
+        ...
 
     def write(self):
         try:
