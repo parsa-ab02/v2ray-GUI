@@ -1,4 +1,4 @@
-from service.parser import ParsedURL
+from service.proxy import Proxy
 
 
 class VmessProxy:
@@ -7,42 +7,38 @@ class VmessProxy:
         "path", "host", "serviceName", "mode", "quicSecurity", "key", "headerType"
     }
 
-    def __init__(self, parse_result: ParsedURL):
-        self.protocol = "vmess"
-        self.tag = parse_result.fragment
-        self.uuid = parse_result.username
-        self.server = parse_result.hostname
-        self.port = parse_result.port
+    def __init__(self, proxy: Proxy):
+        self.proxy = proxy
 
-        self.alter_id = int(parse_result.get_param("alterId", "0"))
-        self.user_security = parse_result.get_param("security", "auto")
-        self.type = parse_result.get_param("type", "tcp")
-        self.tls = parse_result.get_param("tls", "none")
-        self.sni = parse_result.get_param("sni")
-        self.fp = parse_result.get_param("fp")
-        self.alpn = parse_result.get_param("alpn")
-        self.path = parse_result.get_param("path", "/")
-        self.host = parse_result.get_param("host")
-        self.service_name = parse_result.get_param("serviceName")
-        self.mode = parse_result.get_param("mode")
-        self.quic_security = parse_result.get_param("quicSecurity", "none")
-        self.quic_key = parse_result.get_param("key", "")
-        self.quic_header = parse_result.get_param("headerType", "none")
+        self.alter_id = int(proxy.get_param("alterId", "0"))
+        self.user_security = proxy.get_param("security", "auto")
+        self.type = proxy.get_param("type", "tcp")
+        self.tls = proxy.get_param("tls", "none")
+        self.sni = proxy.get_param("sni")
+        self.fp = proxy.get_param("fp")
+        self.alpn = proxy.get_param("alpn")
+        self.path = proxy.get_param("path", "/")
+        self.host = proxy.get_param("host")
+        self.service_name = proxy.get_param("serviceName")
+        self.mode = proxy.get_param("mode")
+        self.quic_security = proxy.get_param("quicSecurity", "none")
+        self.quic_key = proxy.get_param("key", "")
+        self.quic_header = proxy.get_param("headerType", "none")
 
-        self.extra = parse_result.get_extra_params(self.known_params)
+        self.extra = proxy.get_extra_params(self.known_params)
 
     def get_outbound(self):
         outbound = {
-            "tag": self.tag,
+            "tag": self.proxy.tag,
             "protocol": "vmess",
             "settings": {
                 "vnext": [
                     {
-                        "address": self.server,
-                        "port": self.port,
+                        "address": self.proxy.server,
+                        "port": self.proxy.port,
                         "users": [
                             {
-                                "id": self.uuid,
+                                "id": self.proxy.username,
                                 "alterId": self.alter_id,
                                 "security": self.user_security,
                                 "level": 0

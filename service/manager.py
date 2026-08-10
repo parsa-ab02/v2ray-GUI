@@ -34,7 +34,7 @@ class Manager:
 
     @classmethod
     def add(cls, proxy: service.proxy.Proxy):
-        Config.config_list.append(proxy)
+        Manager.Proxies.append(proxy)
 
     @classmethod
     def read_all(cls):
@@ -46,7 +46,7 @@ class Manager:
 
             for raw_url in raw_urls:
                 cfg = cls(raw_url)
-                cls.config_list.append(cfg)
+                cls.Proxies.append(cfg)
 
         except FileNotFoundError:
             cls.config_list = []

@@ -1,36 +1,21 @@
 from urllib.parse import urlparse, parse_qs, unquote
+from pathlib import Path
+import json
 import service
-from protocol.vless import VlessProxy
-from protocol.vmess import VmessProxy
-from protocol.trojan import TrojanProxy
-from protocol.shadowsocks import ShadowsocksProxy
-from protocol.hysteria2 import Hysteria2Proxy
-from protocol.http import HttpProxy
 
-
-PROTOCOL_REGISTRY = {
-    "vless": VlessProxy,
-    "vmess": VmessProxy,
-    "trojan": TrojanProxy,
-    "ss": ShadowsocksProxy,
-    "shadowsocks": ShadowsocksProxy,
-    "hysteria2": Hysteria2Proxy,
-    "hy2": Hysteria2Proxy,
-    "http": HttpProxy,
-    "https": HttpProxy,
-}
 class Proxy:
     protocol: str
     server: str
     port: int
-    username: str
-    password: str
-    tag: str
-    extra_params: list
-    query: dict
+    username: str | None
+    password: str | None
+    tag: str | None
+    query: dict 
     structure: dict
 
-    def __init__(self, protocol, server, port, username=None, password=None, tag=None, extra_params=None):
+    def __init__(self, protocol: str, server: str, port: int,
+                username: str | None =None,password: str | None =None,
+                tag: str | None =None, query: dict | None = None):
         self.protocol = protocol
         self.server = server
         self.port = port
@@ -39,79 +24,74 @@ class Proxy:
         self.password = password
         self.tag = tag
 
-        self.query = extra_params
+        self.query = query or {}
 
         self.structure = {
             "log":{
                 "loglevel": "warning"
             },
             "inbounds": service.inbounds.get_inbounds(),
-            "outbounds": build_outbound()
+            "outbounds": [],
             "routing": {}
         }
 
     @classmethod
-    def get_system_outbounds() -> list[dict]:
-        return [
-            {
-                "tag": "direct",
-                "protocol": "freedom",
-                "settings": {},
-
-            {
-                "tag": "block",
-                "protocol": "blackhole",
-                "settings": {},
-            },
-        ]
-
-    @classmethod
-    def from_URL(cls, URL: str) -> cls:
+    def from_URL(cls, URL: str):
         P = urlparse(URL)
 
-        query = {k: v[0] for k, v in parse_qs(parsed.query).items()}
+        query = {k: v[0] for k, v in parse_qs(P.query).items()}
 
         return cls(protocol=P.scheme, server=P.hostname, port=P.port, username=P.username,
-                   password=P.password, tag=P.fragment, extra_params=query)
+                   password=P.password, tag=P.fragment, query=query)
 
     @classmethod
-    def from_file(cls, path:Path) -> cls:
+    def from_file(cls, path: Path):
         with open(path, "r", encoding="utf-8") as file:
             configuration = json.load(file)
 
         return cls.from_configuration(configuration)
 
-    def from_configuration(cls, configuration: dict) -> cls:
+    @classmethod
+    def from_configuration(cls, configuration: dict):
         ...
 
         # extract args
         # return cls(*args)
 
-    def get_param(self, key: str, default=None) -> str:
+    def get_param(self, key: str, default=None):
         return self.query.get(key, default)
 
-    def get_extra_params(self, known_params: list) -> dict:
-        return{ k: v 
+    def get_extra_params(self, known_params: set[str]) -> dict:
+        return{k: v 
                 for k, v in self.query.items()
                 if k not in known_params
             }
 
-    def get_proxy_class(self):
-        proxy_class = PROTOCOL_REGISTRY.get(self.protocol.lower())
+    def to_dict(self):
+        return {
+            "protocol": self.protocol,
+            "server": self.server,
+            "port": self.port,
+            "username": self.username,
+            "password": self.password,
+            "tag": self.tag,
+            "query":self.query
+        }
 
-        if proxy_class is None:
-            raise ValueError(f"Unsupported protocol: {scheme}")
+    def __eq__(self, other):
+        if not isinstance(other, Proxy):
+            return NotImplemented
 
-        return proxy_class
+        return (
+            self.protocol == other.protocol and
+            self.server == other.server and
+            self.port == other.port and
+            self.username == other.username and
+            self.password == other.password
+            # self.query == other.query
+        )
 
-    def build_outbound(self) -> list:
-        proxy_class = get_proxy_class(p.protocol)
+    
 
-        proxy = proxy_class(self)
-
-        outbound = []
-
-        outbound.extend(proxy.get_outbound())
-        outbound.extend(get_system_outbounds())
-
-        return outbound
+    def __repr__(self):
+        return str(self.to_dict())
