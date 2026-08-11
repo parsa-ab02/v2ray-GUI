@@ -1,4 +1,4 @@
-from service.parser import ParsedURL
+from service.proxy import Proxy
 
 from protocol.vless import VlessProxy
 from protocol.vmess import VmessProxy
@@ -6,7 +6,6 @@ from protocol.trojan import TrojanProxy
 from protocol.shadowsocks import ShadowsocksProxy
 from protocol.hysteria2 import Hysteria2Proxy
 from protocol.http import HttpProxy
-
 
 PROTOCOL_REGISTRY = {
     "vless": VlessProxy,
@@ -20,26 +19,13 @@ PROTOCOL_REGISTRY = {
     "https": HttpProxy,
 }
 
-def parse(raw_url: str) -> ParsedURL:
-    return ParsedURL(raw_url)
-
-def get_proxy_class(scheme: str):
-    scheme = scheme.lower()
-
-    proxy_class = PROTOCOL_REGISTRY.get(scheme)
-
-    if proxy_class is None:
-        raise ValueError(f"Unsupported protocol: {scheme}")
-
-    return proxy_class
-
 def get_system_outbounds() -> list[dict]:
     return [
         {
             "tag": "direct",
             "protocol": "freedom",
             "settings": {},
-        },
+            },
         {
             "tag": "block",
             "protocol": "blackhole",
@@ -47,16 +33,22 @@ def get_system_outbounds() -> list[dict]:
         },
     ]
 
-def build_outbound(raw_url: str) -> list:
-    parsed_url = parse(raw_url)
+def get_proxy_class(proxy: Proxy):
+    proxy_class = PROTOCOL_REGISTRY.get(proxy.protocol.lower())
 
-    proxy_class = get_proxy_class(parsed_url.scheme)
+    if proxy_class is None:
+       raise ValueError(f"Unsupported protocol: {proxy.protocol}")
 
-    proxy = proxy_class(parsed_url)
+    return proxy_class
+
+def build_outbound(proxy: Proxy) -> list:
+    proxy_class = get_proxy_class(proxy)
+
+    proxy_object = proxy_class(proxy)
 
     outbound = []
 
-    outbound.extend(proxy.get_outbound())
+    outbound.extend(proxy_object.get_outbound())
     outbound.extend(get_system_outbounds())
 
     return outbound

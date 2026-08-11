@@ -6,10 +6,10 @@ import requests
 
 
 def get_socks_inbound_from_config():
-    with open(service.config.config_json, "r", encoding="utf-8") as file:
-        config = json.load(file)
+    with open(service.manager.config_json, "r", encoding="utf-8") as file:
+        proxy = json.load(file)
 
-    for inbound in config.get("inbounds", []):
+    for inbound in proxy.get("inbounds", []):
         if inbound.get("tag") == "socks-in":
             return inbound
 
@@ -37,7 +37,7 @@ process = None
 def enable_v2ray():
     global process
 
-    process = subprocess.Popen(["xray" , "run" , "-c", str(service.config.config_json)])
+    process = subprocess.Popen(["xray" , "run" , "-c", str(service.manager.config_json)])
 
     enable_proxy()
 

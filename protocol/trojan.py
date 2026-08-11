@@ -1,40 +1,43 @@
-from service.parser import ParsedURL
+from service.proxy import Proxy
 
 
 class TrojanProxy:
-    def __init__(self, parsed_url: ParsedURL):
-        self.protocol = "trojan"
-        self.tag = parsed_url.fragment
+    known_params = {
+        "type", "security", "sni", "fp", "alpn",
+        "pbk", "sid", "spx",
+        "path", "host", "serviceName", "mode"
+    }
 
-        self.password = parsed_url.username
-        self.server = parsed_url.hostname
-        self.port = parsed_url.port
+    def __init__(self, proxy: Proxy):
+        self.proxy = proxy
 
-        self.type = parsed_url.get_param("type", "tcp")
+        self.type = proxy.get_param("type", "tcp")
 
-        self.security = parsed_url.get_param("security", "tls")
-        self.sni = parsed_url.get_param("sni")
-        self.fp = parsed_url.get_param("fp")
-        self.alpn = parsed_url.get_param("alpn")
+        self.security = proxy.get_param("security", "tls")
+        self.sni = proxy.get_param("sni")
+        self.fp = proxy.get_param("fp")
+        self.alpn = proxy.get_param("alpn")
 
-        self.pbk = parsed_url.get_param("pbk")
-        self.sid = parsed_url.get_param("sid")
-        self.spx = parsed_url.get_param("spx", "/")
+        self.pbk = proxy.get_param("pbk")
+        self.sid = proxy.get_param("sid")
+        self.spx = proxy.get_param("spx", "/")
 
-        self.path = parsed_url.get_param("path", "/")
-        self.host = parsed_url.get_param("host")
-        self.service_name = parsed_url.get_param("serviceName")
-        self.mode = parsed_url.get_param("mode")
+        self.path = proxy.get_param("path", "/")
+        self.host = proxy.get_param("host")
+        self.service_name = proxy.get_param("serviceName")
+        self.mode = proxy.get_param("mode")
+
+        self.extra = proxy.get_extra_params(self.known_params)
 
     def get_outbound(self):
         outbound = {
-            "tag": self.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "trojan",
             "settings": {
                 "servers": [{
-                    "address": self.server,
-                    "port": self.port,
-                    "password": self.password,
+                    "address": self.proxy.server,
+                    "port": self.proxy.port,
+                    "password": self.proxy.username,
                     "level": 0
                 }]
             },

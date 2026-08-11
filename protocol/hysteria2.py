@@ -1,35 +1,37 @@
-from service.parser import ParsedURL
+from service.proxy import Proxy
 
 
 class Hysteria2Proxy:
-    def __init__(self, parsed_url: ParsedURL):
-        self.protocol = "hysteria2"
-        self.tag = parsed_url.fragment
+    known_params = {
+        "sni","alpn", "obfs","obfs-password",
+        "downmbps","upmbps","insecure", "udp",
+    }
 
-        self.server = parsed_url.hostname
-        self.port = parsed_url.port
-        self.password = parsed_url.username
+    def __init__(self, proxy: Proxy):
+        self.proxy = proxy
 
-        self.sni = parsed_url.get_param("sni")
-        self.alpn = parsed_url.get_param("alpn")
+        self.sni = proxy.get_param("sni")
+        self.alpn = proxy.get_param("alpn")
 
-        self.obfs = parsed_url.get_param("obfs")
-        self.obfs_password = parsed_url.get_param("obfs-password")
+        self.obfs = proxy.get_param("obfs")
+        self.obfs_password = proxy.get_param("obfs-password")
 
-        self.down_mbps = parsed_url.get_param("downmbps")
-        self.up_mbps = parsed_url.get_param("upmbps")
+        self.down_mbps = proxy.get_param("downmbps")
+        self.up_mbps = proxy.get_param("upmbps")
 
-        self.insecure = parsed_url.get_param("insecure", "0") == "1"
-        self.udp = parsed_url.get_param("udp", "1") == "1"
+        self.insecure = proxy.get_param("insecure", "0") == "1"
+        self.udp = proxy.get_param("udp", "1") == "1"
+
+        self.extra = proxy.get_extra_params(self.known_params)
 
     def get_outbound(self):
         outbound = {
-            "tag": self.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "hysteria2",
             "settings": {
-                "server": self.server,
-                "server_port": self.port,
-                "password": self.password,
+                "server": self.proxy.server,
+                "server_port": self.proxy.port,
+                "password": self.proxy.username,
             },
             "streamSettings": {
                 "network": "tcp"
