@@ -32,7 +32,7 @@ class HttpProxy:
             }]
 
         outbound = {
-            "tag": self.proxy.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "http",
             "settings": {
                 "servers": [server]

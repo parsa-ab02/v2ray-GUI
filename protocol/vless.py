@@ -37,7 +37,7 @@ class VlessProxy:
             user["flow"] = self.flow
 
         outbound = {
-            "tag": self.proxy.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "vless",
             "settings": {
                 "vnext": [

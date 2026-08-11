@@ -29,7 +29,7 @@ class VmessProxy:
 
     def get_outbound(self):
         outbound = {
-            "tag": self.proxy.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "vmess",
             "settings": {
                 "vnext": [

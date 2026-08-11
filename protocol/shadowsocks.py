@@ -36,7 +36,7 @@ class ShadowsocksProxy:
 
     def get_outbound(self):
         outbound = {
-            "tag": self.proxy.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "shadowsocks",
             "settings": {
                 "servers": [{

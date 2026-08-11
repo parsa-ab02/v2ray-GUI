@@ -10,12 +10,13 @@ class Proxy:
     username: str | None
     password: str | None
     tag: str | None
-    query: dict 
+    unquoted_tag : str | None
+    extra_params: dict 
     structure: dict
 
     def __init__(self, protocol: str, server: str, port: int,
                 username: str | None =None,password: str | None =None,
-                tag: str | None =None, query: dict | None = None):
+                tag: str | None =None, extra_params: dict | None = None):
         self.protocol = protocol
         self.server = server
         self.port = port
@@ -24,25 +25,27 @@ class Proxy:
         self.password = password
         self.tag = tag
 
-        self.query = query or {}
+        self.unquoted_tag = unquote(tag) if tag else None
+
+        self.extra_params = extra_params or {}
 
         self.structure = {
             "log":{
                 "loglevel": "warning"
             },
             "inbounds": service.inbounds.get_inbounds(),
-            "outbounds": [],
-            "routing": {}
+            "outbounds": service.proxyHandler.build_outbound(self),
+            "routing": service.routing.get_routing(),
         }
 
     @classmethod
     def from_URL(cls, URL: str):
         P = urlparse(URL)
 
-        query = {k: v[0] for k, v in parse_qs(P.query).items()}
+        extra_params = {k: v[0] for k, v in parse_qs(P.query).items()}
 
         return cls(protocol=P.scheme, server=P.hostname, port=P.port, username=P.username,
-                   password=P.password, tag=P.fragment, query=query)
+                   password=P.password, tag=P.fragment, extra_params=extra_params)
 
     @classmethod
     def from_file(cls, path: Path):
@@ -59,11 +62,11 @@ class Proxy:
         # return cls(*args)
 
     def get_param(self, key: str, default=None):
-        return self.query.get(key, default)
+        return self.extra_params.get(key, default)
 
     def get_extra_params(self, known_params: set[str]) -> dict:
         return{k: v 
-                for k, v in self.query.items()
+                for k, v in self.extra_params.items()
                 if k not in known_params
             }
 
@@ -75,7 +78,7 @@ class Proxy:
             "username": self.username,
             "password": self.password,
             "tag": self.tag,
-            "query":self.query
+            "extra_params":self.extra_params
         }
 
     def __eq__(self, other):
@@ -88,7 +91,7 @@ class Proxy:
             self.port == other.port and
             self.username == other.username and
             self.password == other.password
-            # self.query == other.query
+            # self.extra_params == other.extra_params
         )
 
     

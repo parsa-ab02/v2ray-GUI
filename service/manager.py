@@ -1,5 +1,5 @@
 import json
-import service
+from service import proxy
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
@@ -8,14 +8,12 @@ data_dir = root / "data"
 config_json = data_dir / "config.json"
 data_saves = data_dir / "saves.json"
 
-routing_settings = service.routing.get_routing()
-
 
 class Manager:
     Proxies = []
 
     @classmethod
-    def write(cls, proxy: service.proxy.Proxy, path: Path):
+    def write(cls, proxy: proxy.Proxy, path: Path):
         try:
             data_dir.mkdir(parents=True, exist_ok=True)
 
@@ -26,27 +24,27 @@ class Manager:
             return f"error: {e}"
 
     @classmethod
-    def remove(cls, proxy: service.proxy.Proxy):
-        Manager.Proxies = [
+    def remove(cls, proxy: proxy.Proxy):
+        cls.Proxies = [
             p for p in Manager.Proxies
             if p != proxy
         ]
 
     @classmethod
-    def add(cls, proxy: service.proxy.Proxy):
-        Manager.Proxies.append(proxy)
+    def add(cls, proxy: proxy.Proxy):
+        cls.Proxies.append(proxy)
 
     @classmethod
     def read_all(cls):
         try:
             with open(data_saves, "r", encoding="utf-8") as file:
-                raw_urls = json.load(file)
+                proxies_kwargs = json.load(file)
 
             cls.Proxies = []
 
-            for raw_url in raw_urls:
-                cfg = cls(raw_url)
-                cls.Proxies.append(cfg)
+            for kwargs in proxies_kwargs:
+                prxy = proxy.Proxy(**kwargs)
+                cls.Proxies.append(prxy)
 
         except FileNotFoundError:
             cls.config_list = []
@@ -61,13 +59,13 @@ class Manager:
         try:
             data_dir.mkdir(parents=True, exist_ok=True)
 
-            raw_urls = []
+            listof_proxies_dicts = []
 
-            for cfg in cls.config_list:
-                raw_urls.append(cfg.raw_url)
+            for prxy in cls.Proxies:
+                listof_proxies_dicts.append(prxy.to_dict())
 
             with open(data_saves, "w", encoding="utf-8") as file:
-                json.dump(raw_urls, file, ensure_ascii=False, indent=4)
+                json.dump(listof_proxies_dicts, file, ensure_ascii=False, indent=4)
 
         except Exception as e:
             return f"error: {e}"

@@ -26,7 +26,7 @@ class Hysteria2Proxy:
 
     def get_outbound(self):
         outbound = {
-            "tag": self.proxy.tag,
+            "tag": self.proxy.unquoted_tag,
             "protocol": "hysteria2",
             "settings": {
                 "server": self.proxy.server,

@@ -1,5 +1,5 @@
 import tkinter as tk
-import service.config , service.terminal
+from service import manager , terminal , proxy
 from pathlib import Path
 
 root_file = Path(__file__).resolve().parent
@@ -10,7 +10,7 @@ root.title("V2rayGUI")
 root.geometry("600x600")
 root.resizable(width=False, height=False)
 
-service.config.Config.read_all()
+manager.Manager.read_all()
 
 config_scrollbar_frame = tk.Frame(root, borderwidth=2, relief="groove", background="gray")
 config_scrollbar_frame.place(x=0, y=0, height=400, width=600)
@@ -31,26 +31,26 @@ def update_scroll(event):
 
 inner_frame.bind("<Configure>", update_scroll)
 
-def make_config_frame(conf : service.config.Config):
+def make_config_frame(prxy : proxy.Proxy):
     config_frame = tk.Frame(inner_frame, borderwidth=2 , relief="groove" , background="white" , height=30 , width=600)
     config_frame.pack(pady=2)
     config_frame.pack_propagate(False)
 
-    label = tk.Label(config_frame , text=conf.tag)
+    label = tk.Label(config_frame , text=prxy.unquoted_tag)
     label.place(x=2 , y=0 , height=25 , width=398)
 
-    select_button = tk.Button(config_frame, borderwidth=2 , relief="groove" , text="select" , command=lambda : service.config.Config.write(conf, root_file/"data"/"config.json"))
+    select_button = tk.Button(config_frame, borderwidth=2 , relief="groove" , text="select" , command=lambda : manager.Manager.write(prxy, root_file/"data"/"config.json"))
     select_button.place(x=400 , y=0 , height=25 , width=90)
 
     def removeFrame():
-        service.config.Config.remove(conf)
+        manager.Manager.remove(prxy)
         config_frame.destroy()
 
     delete_button = tk.Button(config_frame, borderwidth=2 , relief="groove" , text="delete" , command=removeFrame)
     delete_button.place(x=490 , y=0 , height=25 , width=90)
 
-for conf in service.config.Config.config_list :
-    make_config_frame(conf)
+for prxy in manager.Manager.Proxies :
+    make_config_frame(prxy)
 
 UI_frame = tk.Frame(root , borderwidth=2 , relief="groove" , background="lightgray")
 UI_frame.place(x=0 , y=400 , height=200 , width=600)
@@ -59,11 +59,11 @@ start_button = tk.Button(UI_frame , borderwidth=2 , relief="groove" , text="star
 start_button.place(x=10 , y=10 , height=80 , width=100)
 
 def Start():
-    service.terminal.enable_v2ray()
+    terminal.enable_v2ray()
     start_button.configure(text="stop" , command=Stop)
 
 def Stop():
-    service.terminal.disable_v2ray()
+    terminal.disable_v2ray()
     start_button.configure(text="start" , command=Start)
 
 start_button.configure(command=Start)
@@ -78,12 +78,13 @@ def add():
         return
     
     try:
-        conf = service.config.Config(url)
-        service.config.Config.add(conf)
+        prxy = proxy.Proxy.from_URL(url)
+        manager.Manager.add(prxy)
+
     except Exception as e:
         return f'error : {e}'
     
-    make_config_frame(conf)
+    make_config_frame(prxy)
 
     textBox.delete("1.0", tk.END)
 
@@ -91,7 +92,7 @@ add_button = tk.Button(UI_frame , text="+" ,borderwidth=2 , relief="groove", bac
 add_button.place(x=490 , y=100 , height=80 , width=100)
 
 def on_close():
-    service.config.Config.save()
+    manager.Manager.save()
     root.destroy()
 
 root.protocol("WM_DELETE_WINDOW", on_close)
