@@ -4,15 +4,15 @@ import json
 import service
 
 class Proxy:
-    protocol: str
-    server: str
-    port: int
-    username: str | None
-    password: str | None
-    tag: str | None
-    unquoted_tag : str | None
-    extra_params: dict 
-    structure: dict
+    # protocol: str
+    # server: str
+    # port: int
+    # username: str | None
+    # password: str | None
+    # tag: str | None
+    # unquoted_tag : str | None
+    # extra_params: dict 
+    # structure: dict
 
     def __init__(self, protocol: str, server: str, port: int,
                 username: str | None =None,password: str | None =None,

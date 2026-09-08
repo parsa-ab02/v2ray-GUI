@@ -47,7 +47,7 @@ class Manager:
                 cls.Proxies.append(prxy)
 
         except FileNotFoundError:
-            cls.config_list = []
+            cls.Proxies = []
 
         except Exception as e:
             return f"error: {e}"

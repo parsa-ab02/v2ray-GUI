@@ -3,12 +3,13 @@ from pathlib import Path
 from PIL import Image
 import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-import service.config
+from service.manager import Manager
+from service.proxy import Proxy
 
 root = Path(__file__).resolve().parent
 icons_directory = root / "icons"
 
-service.config.Config.read_all()
+Manager.read_all()
 
 def rgb(color):
     return "#%02x%02x%02x" % color
@@ -32,9 +33,9 @@ def ShowConfigs():
         MainFrame.place_forget()
         AddFrame.place_forget()
         LogsFrame.place_forget()
-        ConfigsFrame.place_forget()
-        ConfigsFrame.configure(width=800)
-        ConfigsFrame.place(x=116 , y= 2)
+        # ConfigsFrame.place_forget()
+        # ConfigsFrame.configure(width=800)
+        # ConfigsFrame.place(x=116 , y= 2)
         current_page = "Configs"
         createSelectedConfigInfo()
 
@@ -243,32 +244,32 @@ ConfigScrollBar.pack(padx= 2 , pady= 2 , fill="both" , expand=True)
 ConfigsFrame.place(x= 904, y= 2)
 
 Frames = list()
-selectedFrame : ctk.CTkFrame | None = None
+selected_config_Frame : ctk.CTkFrame | None = None
 
 def TopSelected():
-    global selectedFrame
-    if selectedFrame is Frames[0]:
+    global selected_config_Frame
+    if selected_config_Frame is Frames[0]:
         return
 
-    selectedFrame.pack_forget()
-    selectedFrame.pack(padx=2, pady=2 , side="top"  ,fill="x", expand=True, before=Frames[0])
+    selected_config_Frame.pack_forget()
+    selected_config_Frame.pack(padx=2, pady=2 , side="top"  ,fill="x", expand=True, before=Frames[0])
 
-    Frames.insert(0,Frames.pop(Frames.index(selectedFrame)))
+    Frames.insert(0,Frames.pop(Frames.index(selected_config_Frame)))
 
 def FrameConfiguration(frame : ctk.CTkFrame):
     def on_enter(event):
         frame.configure(fg_color=rgb((0, 74, 173)))
 
     def on_leave(event):
-        global selectedFrame
-        if frame is not selectedFrame:
+        global selected_config_Frame
+        if frame is not selected_config_Frame:
             frame.configure(fg_color=rgb((19, 19, 54)))
 
     def on_press(event):
         frame.configure(fg_color=rgb((94, 23, 235)))
 
     def on_release(event):
-        global selectedFrame
+        global selected_config_Frame
         x = event.x
         y = event.y
 
@@ -276,10 +277,10 @@ def FrameConfiguration(frame : ctk.CTkFrame):
         height = frame.winfo_height()
 
         if 0 <= x <= width and 0 <= y <= height:
-            if selectedFrame is not None:
-                selectedFrame.configure(fg_color=rgb((19, 19, 54)))
-            if frame is not selectedFrame:
-                selectedFrame = frame
+            if selected_config_Frame is not None:
+                selected_config_Frame.configure(fg_color=rgb((19, 19, 54)))
+            if frame is not selected_config_Frame:
+                selected_config_Frame = frame
                 createSelectedConfigInfo()
             TopSelected()
             frame.configure(fg_color=rgb((0, 74, 173)))
@@ -300,15 +301,14 @@ deleteClickedImage = ctk.CTkImage(dark_image=Image.open(icons_directory / "Delet
 TagFont = ctk.CTkFont(family="Fredoka", size=30)
 InfoFont = ctk.CTkFont(family="Fredoka", size=25)
 
-def createConfigFrame(config):
+def createConfigFrame(proxy: Proxy):
     configFrame = ctk.CTkFrame(master=ConfigScrollBar  , height=120, border_width=2 , border_color="white", fg_color=rgb((19, 19, 54)))
-    configFrame.conf = config
-    TagLabel = ctk.CTkLabel(master=configFrame, text=config.tag , font=TagFont)
-    ProtocolLabel = ctk.CTkLabel(master=configFrame, text=config.protocol, font=InfoFont)
-    PortLabel = ctk.CTkLabel(master=configFrame, text=config.port, font=InfoFont)
-    TagLabel.place(x=5,y=5)
-    ProtocolLabel.place(x=10,y=60)
-    PortLabel.place(x=100,y=60)
+    configFrame.proxy = proxy
+
+    ctk.CTkLabel(master=configFrame, text=proxy.tag , font=TagFont).place(x=5,y=5)
+    ctk.CTkLabel(master=configFrame, text=proxy.protocol, font=InfoFont).place(x=10,y=60)
+    ctk.CTkLabel(master=configFrame, text=proxy.port, font=InfoFont).place(x=100,y=60)
+
     FrameConfiguration(configFrame)
     DeleteButton = ctk.CTkButton(master=configFrame, width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
     buttonConfiguration(DeleteButton, deleteImage, deleteHoverImage, deleteClickedImage)
@@ -317,7 +317,7 @@ def createConfigFrame(config):
     configFrame.pack(padx=2, pady=2 , side="top"  ,fill="x", expand=True)
 
 def create_all(index=0):
-    configs = service.config.Config.config_list
+    configs = Manager.Proxies
 
     if index >= len(configs):
         return
@@ -345,24 +345,36 @@ def unbind_mousewheel(event=None):
 ConfigScrollBar.bind("<Enter>", bind_mousewheel)
 ConfigScrollBar.bind("<Leave>", unbind_mousewheel)
 
-SelectedConfigInfo = ctk.CTkFrame(master=app , width=576 , height=400, border_width=2 , border_color="white" , fg_color=rgb((19, 19, 54)))
+SelectedConfigInfo = ctk.CTkFrame(master=app , width=784 , height=904, border_width=2 , border_color="white" , fg_color=rgb((19, 19, 54)))
 
 def createSelectedConfigInfo():
     global SelectedConfigInfo
-    global selectedFrame
+    global selected_config_Frame
     SelectedConfigInfo.pack_propagate(False)
+
     for widget in SelectedConfigInfo.winfo_children():
         widget.destroy()
-    if selectedFrame is None:
-        emptyLabel = ctk.CTkLabel(master=SelectedConfigInfo, text="no configs selected!", font=TagFont).place(x=150 , y=150)
+
+    if selected_config_Frame is None:
+        ctk.CTkLabel(master=SelectedConfigInfo, text="no configs selected!", font=TagFont).place(x=150 , y=150)
     else:
-        TagLabel = ctk.CTkLabel(master=SelectedConfigInfo, text=selectedFrame.conf.tag , font=TagFont).place(x= 10 , y= 10)
-        ProtocolLabel = ctk.CTkLabel(master=SelectedConfigInfo, text=f"protocol : {selectedFrame.conf.protocol}", font=InfoFont).place(x= 10 , y= 50)
-        PortLabel = ctk.CTkLabel(master=SelectedConfigInfo, text=f"port : {selectedFrame.conf.port}", font=InfoFont).place(x= 210 , y= 50)
-        hostNameLabel = ctk.CTkLabel(master=SelectedConfigInfo, text=f"host name :{selectedFrame.conf.ParsedUrl.hostname}", font=InfoFont).place(x= 10 , y= 100)
-        URLLabel = ctk.CTkLabel(master=SelectedConfigInfo, text=selectedFrame.conf.raw_url, font=InfoFont).place(x= 10 , y= 150)
+        ProxyInfo:dict = selected_config_Frame.proxy.to_dict()
+
+        for row, (key, value) in enumerate(ProxyInfo.items()):
+            if key == "tag" and value:
+                value = selected_config_Frame.proxy.unquoted_tag
+
+            ctk.CTkLabel(master=SelectedConfigInfo,text=f"{key}:",font=InfoFont).place(x=10, y=10 + row * 40)
+
+            if key == "extra_params" and isinstance(value, dict):
+                for erow, (ekey, evalue) in enumerate(value.items()):
+                    ctk.CTkLabel(master=SelectedConfigInfo,text=f"{ekey}:",font=InfoFont).place(x=40, y=300 + erow * 40)
+                    ctk.CTkLabel(master=SelectedConfigInfo,text=str(evalue),font=InfoFont).place(x=190, y=300 + erow * 40)
+                continue
+
+            ctk.CTkLabel(master=SelectedConfigInfo,text=str(value),font=InfoFont).place(x=150, y=10 + row * 40)
 
     if current_page == "Configs":
-        SelectedConfigInfo.place(x=920  , y=2)
+        SelectedConfigInfo.place(x=116  , y=2)
 
 app.mainloop()
