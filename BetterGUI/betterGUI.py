@@ -21,9 +21,10 @@ def ShowHome():
         SelectedConfigInfo.place_forget()
         MainFrame.place(x=116 , y= 2)
         AddFrame.place(x= 116,y= 306)
-        ConfigsFrame.place_forget()
-        ConfigsFrame.configure(width=596)
-        ConfigsFrame.place(x= 904, y= 2)
+        if current_page != "Configs":
+            ConfigsFrame.place_forget()
+            ConfigsFrame.configure(width=596)
+            ConfigsFrame.place(x= 904, y= 2)
         LogsFrame.place(x=116, y= 420)
         current_page = "Home"
 
@@ -305,7 +306,7 @@ def createConfigFrame(proxy: Proxy):
     configFrame = ctk.CTkFrame(master=ConfigScrollBar  , height=120, border_width=2 , border_color="white", fg_color=rgb((19, 19, 54)))
     configFrame.proxy = proxy
 
-    ctk.CTkLabel(master=configFrame, text=proxy.tag , font=TagFont).place(x=5,y=5)
+    ctk.CTkLabel(master=configFrame, text=proxy.display_tag , font=TagFont).place(x=5,y=5)
     ctk.CTkLabel(master=configFrame, text=proxy.protocol, font=InfoFont).place(x=10,y=60)
     ctk.CTkLabel(master=configFrame, text=proxy.port, font=InfoFont).place(x=100,y=60)
 
@@ -345,7 +346,7 @@ def unbind_mousewheel(event=None):
 ConfigScrollBar.bind("<Enter>", bind_mousewheel)
 ConfigScrollBar.bind("<Leave>", unbind_mousewheel)
 
-SelectedConfigInfo = ctk.CTkFrame(master=app , width=784 , height=904, border_width=2 , border_color="white" , fg_color=rgb((19, 19, 54)))
+SelectedConfigInfo = ctk.CTkFrame(master=app , width=784 , height=796, border_width=2 , border_color="white" , fg_color=rgb((19, 19, 54)))
 
 def createSelectedConfigInfo():
     global SelectedConfigInfo
@@ -362,7 +363,7 @@ def createSelectedConfigInfo():
 
         for row, (key, value) in enumerate(ProxyInfo.items()):
             if key == "tag" and value:
-                value = selected_config_Frame.proxy.unquoted_tag
+                value = selected_config_Frame.proxy.display_tag
 
             ctk.CTkLabel(master=SelectedConfigInfo,text=f"{key}:",font=InfoFont).place(x=10, y=10 + row * 40)
 
