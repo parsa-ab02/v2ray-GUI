@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from rgb import rgb
 from pathlib import Path
 from PIL import Image
 import sys
@@ -10,9 +11,6 @@ root = Path(__file__).resolve().parent
 icons_directory = root / "icons"
 
 Manager.read_all()
-
-def rgb(color):
-    return "#%02x%02x%02x" % color
 
 current_page = "Home"
 def ShowHome():
@@ -34,9 +32,6 @@ def ShowConfigs():
         MainFrame.place_forget()
         AddFrame.place_forget()
         LogsFrame.place_forget()
-        # ConfigsFrame.place_forget()
-        # ConfigsFrame.configure(width=800)
-        # ConfigsFrame.place(x=116 , y= 2)
         current_page = "Configs"
         createSelectedConfigInfo()
 
