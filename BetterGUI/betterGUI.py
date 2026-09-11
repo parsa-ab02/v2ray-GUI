@@ -6,6 +6,7 @@ import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from service.manager import Manager
 from service.proxy import Proxy
+from routing import routingFrame
 
 root = Path(__file__).resolve().parent
 icons_directory = root / "icons"
@@ -15,28 +16,36 @@ Manager.read_all()
 current_page = "Home"
 def ShowHome():
     global current_page
-    if current_page != "Home":
+    if current_page == "Configs":
         SelectedConfigInfo.place_forget()
-        MainFrame.place(x=116 , y= 2)
-        AddFrame.place(x= 116,y= 306)
-        if current_page != "Configs":
-            ConfigsFrame.place_forget()
-            ConfigsFrame.configure(width=596)
-            ConfigsFrame.place(x= 904, y= 2)
-        LogsFrame.place(x=116, y= 420)
-        current_page = "Home"
+    elif current_page == "Routings":
+        routings_frame.remove()
+    MainFrame.place(x=116 , y= 2)
+    AddFrame.place(x= 116,y= 306)
+    LogsFrame.place(x=116, y= 420)
+    current_page = "Home"
 
 def ShowConfigs():
     global current_page
-    if current_page != "Configs":
+    if current_page == "Home":
         MainFrame.place_forget()
         AddFrame.place_forget()
         LogsFrame.place_forget()
-        current_page = "Configs"
-        createSelectedConfigInfo()
+    elif current_page == "Routings":
+        routings_frame.remove()
+    current_page = "Configs"
+    createSelectedConfigInfo()
 
 def ShowRouting():
-    pass
+    global current_page
+    if current_page == "Home":
+        MainFrame.place_forget()
+        AddFrame.place_forget()
+        LogsFrame.place_forget()
+    elif current_page == "Configs":
+        SelectedConfigInfo.place_forget()
+    current_page = "Routings"
+    routings_frame.show()
 
 def ShowLogs():
     pass
@@ -100,7 +109,7 @@ buttonConfiguration(ConfigsButton , ctk.CTkImage(dark_image=Image.open(icons_dir
 ConfigsButton.place(x=4 , y=106)
 
 RoutingButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
-buttonConfiguration(RoutingButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Routing.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "RoutingHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "RoutingClicked.png"), size=(80,80)))
+buttonConfiguration(RoutingButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Routing.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "RoutingHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "RoutingClicked.png"), size=(80,80)), command=ShowRouting)
 RoutingButton.place(x=4 , y= 208)
 
 LogsButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",fg_color=rgb((24, 0, 173)) , hover_color=rgb((24, 0, 173)),  height=100 , border_width=2 , border_color="white" , corner_radius=10)
@@ -372,5 +381,8 @@ def createSelectedConfigInfo():
 
     if current_page == "Configs":
         SelectedConfigInfo.place(x=116  , y=2)
+
+#---------------- Routing Frame --------------------
+routings_frame = routingFrame(app=app)
 
 app.mainloop()
