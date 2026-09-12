@@ -98,7 +98,7 @@ ctk.set_appearance_mode("dark")
 
 # -------------- Side Frame ----------------------
 
-SideFrame = ctk.CTkFrame(master=app , width=110 , height=798 , fg_color=rgb((19, 19, 54)) ,border_width=2 , border_color="white")
+SideFrame = ctk.CTkFrame(master=app , width=110 , height=796 , fg_color=rgb((19, 19, 54)) ,border_width=2 , border_color="white")
 
 HomeButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
 buttonConfiguration(HomeButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Home.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "HomeHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "HomeClicked.png"), size=(80,80)) , command=ShowHome)
@@ -118,7 +118,7 @@ LogsButton.place(x=4 , y= 310)
 
 SettingsButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",fg_color=rgb((24, 0, 173)) , hover_color=rgb((24, 0, 173)),  height=100 , border_width=2 , border_color="white" , corner_radius=10)
 buttonConfiguration(SettingsButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Settings.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "SettingsHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "SettingsClicked.png"), size=(80,80)))
-SettingsButton.place(x=4 , y = 696)
+SettingsButton.place(x=4 , y = 692)
 
 SideFrame.place(x = 2 , y = 2)
 # --------------- Main Frame ----------------------
