@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from rgb import rgb
+from utils import rgb
 from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))

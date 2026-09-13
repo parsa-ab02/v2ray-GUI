@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from rgb import rgb
+from utils import rgb
 from pathlib import Path
 from PIL import Image
 import sys
@@ -7,6 +7,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from service.manager import Manager
 from service.proxy import Proxy
 from routing import routingFrame
+from sidepanel import SidePanel
+
+from utils import buttonConfiguration
 
 root = Path(__file__).resolve().parent
 icons_directory = root / "icons"
@@ -53,43 +56,6 @@ def ShowLogs():
 def ShowSettings():
     pass
 
-
-def buttonConfiguration(Btn: ctk.CTkButton, StandardImage: ctk.CTkImage, HoverImage: ctk.CTkImage, ClickImage: ctk.CTkImage, command=None):
-    Btn.standard_image = StandardImage
-    Btn.hover_image = HoverImage
-    Btn.click_image = ClickImage
-
-    Btn.configure(text="", image=Btn.standard_image,fg_color=rgb((24, 0, 173)) ,hover= False)
-
-    def on_enter(event):
-        Btn.configure(image=Btn.hover_image, fg_color=rgb((0, 74, 173)))
-
-    def on_leave(event):
-        Btn.configure(image=Btn.standard_image, fg_color=rgb((24, 0, 173)))
-
-    def on_press(event):
-        Btn.configure(image=Btn.click_image, fg_color=rgb((94, 23, 235)))
-
-    def on_release(event):
-        x = event.x
-        y = event.y
-
-        width = Btn.winfo_width()
-        height = Btn.winfo_height()
-
-        if 0 <= x <= width and 0 <= y <= height:
-            Btn.configure(image=Btn.hover_image, fg_color=rgb((0, 74, 173)))
-            if command is not None:
-                command()
-        else:
-            Btn.configure(image=Btn.standard_image, fg_color=rgb((24, 0, 173)))
-
-    Btn.bind("<Enter>", on_enter)
-    Btn.bind("<Leave>", on_leave)
-    Btn.bind("<ButtonPress-1>", on_press)
-    Btn.bind("<ButtonRelease-1>", on_release)
-
-
 app = ctk.CTk()
 app.title("v2ray GUI")
 app.geometry("1500x800")
@@ -98,29 +64,9 @@ ctk.set_appearance_mode("dark")
 
 # -------------- Side Frame ----------------------
 
-SideFrame = ctk.CTkFrame(master=app , width=110 , height=796 , fg_color=rgb((19, 19, 54)) ,border_width=2 , border_color="white")
+SideFrme = SidePanel(app, ShowHome, ShowConfigs, ShowRouting)
+SideFrme.show()
 
-HomeButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
-buttonConfiguration(HomeButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Home.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "HomeHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "HomeClicked.png"), size=(80,80)) , command=ShowHome)
-HomeButton.place(x=4,y=4)
-
-ConfigsButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
-buttonConfiguration(ConfigsButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Configs.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "ConfigsHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "ConfigsClicked.png"), size=(80,80)) , command=ShowConfigs)
-ConfigsButton.place(x=4 , y=106)
-
-RoutingButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
-buttonConfiguration(RoutingButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Routing.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "RoutingHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "RoutingClicked.png"), size=(80,80)), command=ShowRouting)
-RoutingButton.place(x=4 , y= 208)
-
-LogsButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",fg_color=rgb((24, 0, 173)) , hover_color=rgb((24, 0, 173)),  height=100 , border_width=2 , border_color="white" , corner_radius=10)
-buttonConfiguration(LogsButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Logs.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "LogsHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "LogsClicked.png"), size=(80,80)))
-LogsButton.place(x=4 , y= 310)
-
-SettingsButton = ctk.CTkButton(master = SideFrame ,width=100 ,text= "",fg_color=rgb((24, 0, 173)) , hover_color=rgb((24, 0, 173)),  height=100 , border_width=2 , border_color="white" , corner_radius=10)
-buttonConfiguration(SettingsButton , ctk.CTkImage(dark_image=Image.open(icons_directory / "Settings.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "SettingsHover.png"), size=(80,80)) , ctk.CTkImage(dark_image=Image.open(icons_directory / "SettingsClicked.png"), size=(80,80)))
-SettingsButton.place(x=4 , y = 692)
-
-SideFrame.place(x = 2 , y = 2)
 # --------------- Main Frame ----------------------
 
 MainFrame = ctk.CTkFrame(master=app, width=784 , height=300 , border_width=2 , border_color="white" , fg_color=rgb((19, 19, 54)))
