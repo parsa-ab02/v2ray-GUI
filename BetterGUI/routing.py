@@ -19,7 +19,7 @@ class routingFrame():
 
         self.profile_frames = []
 
-    def configure_action(self, frame: ctk.CTkFrame):
+    def Routing_profile_configuration(self, frame: ctk.CTkFrame):
         def on_enter(event):
             if frame is not self.selected_profile_frame:
                 frame.configure(fg_color=rgb((0, 74, 173)))
@@ -83,7 +83,7 @@ class routingFrame():
         row = index // 3
         column = index % 3
 
-        self.configure_action(profile_frame)
+        self.Routing_profile_configuration(profile_frame)
         profile_frame.grid(row=row,column=column,padx=5,pady=5)
         self.profile_frames.append(profile_frame)
 
@@ -102,17 +102,3 @@ class routingFrame():
 
     def remove(self):
         self.Frame.place_forget()
-
-if __name__ == "__main__":
-    app = ctk.CTk()
-    app.title("v2ray GUI")
-    app.geometry("1500x800")
-    app.resizable(width=False , height=False)
-    ctk.set_appearance_mode("dark")
-    frame = routingFrame(app=app)
-
-    Manager.read_all()
-
-    frame.show()
-
-    app.mainloop()

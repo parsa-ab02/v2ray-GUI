@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
-from utils import rgb
-from utils import buttonConfiguration , root
+from utils import rgb , buttonConfiguration , root
 
 icons_directory = root / "icons"
 
