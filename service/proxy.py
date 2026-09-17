@@ -2,18 +2,10 @@ from urllib.parse import urlparse, parse_qs, unquote
 from pathlib import Path
 import json
 import service
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 class Proxy:
-    protocol: str
-    server: str
-    port: int
-    username: str | None
-    password: str | None
-    tag: str | None
-    unquoted_tag : str | None
-    extra_params: dict 
-    structure: dict
-
     def __init__(self, protocol: str, server: str, port: int,
                 username: str | None =None,password: str | None =None,
                 tag: str | None =None, extra_params: dict | None = None):
@@ -98,3 +90,13 @@ class Proxy:
 
     def __repr__(self):
         return str(self.to_dict())
+
+    @property
+    def display_tag(self):
+
+        if not self.unquoted_tag:
+            return None
+
+        reshaped = arabic_reshaper.reshape(self.unquoted_tag)
+
+        return get_display(reshaped)

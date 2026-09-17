@@ -7,10 +7,12 @@ data_dir = root / "data"
 
 config_json = data_dir / "config.json"
 data_saves = data_dir / "saves.json"
+routing_saves = data_dir / "routing.json"
 
 
 class Manager:
     Proxies = []
+    Routings = {}
 
     @classmethod
     def write(cls, proxy: proxy.Proxy, path: Path):
@@ -46,8 +48,11 @@ class Manager:
                 prxy = proxy.Proxy(**kwargs)
                 cls.Proxies.append(prxy)
 
+            with open(routing_saves, "r", encoding="utf-8") as file:
+                cls.Routings = json.load(file)
+
         except FileNotFoundError:
-            cls.config_list = []
+            cls.Proxies = []
 
         except Exception as e:
             return f"error: {e}"
@@ -59,13 +64,13 @@ class Manager:
         try:
             data_dir.mkdir(parents=True, exist_ok=True)
 
-            listof_proxies_dicts = []
-
-            for prxy in cls.Proxies:
-                listof_proxies_dicts.append(prxy.to_dict())
+            listof_proxies_dicts = [proxy.to_dict() for proxy in cls.Proxies]
 
             with open(data_saves, "w", encoding="utf-8") as file:
                 json.dump(listof_proxies_dicts, file, ensure_ascii=False, indent=4)
+
+            with open(routing_saves, "w", encoding="utf-8") as file:
+                json.dump(cls.Routings, file, ensure_ascii=False, indent=4)
 
         except Exception as e:
             return f"error: {e}"
