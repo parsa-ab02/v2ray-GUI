@@ -1,9 +1,9 @@
 import customtkinter as ctk
-from utils import rgb
 from pathlib import Path
 from PIL import Image
 import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from service.manager import Manager
 from service.proxy import Proxy
 
@@ -12,45 +12,47 @@ from sidepanel import SidePanel
 from mainframe import MainFrame
 from addframe import AddFrame
 
-from utils import buttonConfiguration
+from currentPage import CurrentPage
+
+from utils import buttonConfiguration, rgb
 
 root = Path(__file__).resolve().parent
 icons_directory = root / "icons"
 
 Manager.read_all()
 
-current_page = "Home"
+current_page = CurrentPage.Home
 def ShowHome():
     global current_page
-    if current_page == "Configs":
+    if current_page is CurrentPage.Configs:
         SelectedConfigInfo.place_forget()
-    elif current_page == "Routings":
+    elif current_page is CurrentPage.Routings:
         routings_frame.remove()
     main_frame.show()
     add_frame.show()
     LogsFrame.place(x=116, y= 420)
-    current_page = "Home"
+    current_page = CurrentPage.Home
 
 def ShowConfigs():
     global current_page
-    if current_page == "Home":
+    if current_page is CurrentPage.Home:
         main_frame.remove()
         add_frame.remove()
         LogsFrame.place_forget()
-    elif current_page == "Routings":
+    elif current_page is CurrentPage.Routings:
         routings_frame.remove()
-    current_page = "Configs"
+    current_page = CurrentPage.Configs
     createSelectedConfigInfo()
 
 def ShowRouting():
     global current_page
-    if current_page == "Home":
+    if current_page is CurrentPage.Home:
         main_frame.remove()
         add_frame.remove()
         LogsFrame.place_forget()
-    elif current_page == "Configs":
+    elif current_page is CurrentPage.Configs:
         SelectedConfigInfo.place_forget()
-    current_page = "Routings"
+    current_page = CurrentPage.Routings
     routings_frame.show()
 
 def ShowLogs():
