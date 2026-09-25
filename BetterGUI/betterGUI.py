@@ -5,7 +5,6 @@ import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from service.manager import Manager
-from service.proxy import Proxy
 
 from routing import routingFrame
 from sidepanel import SidePanel
