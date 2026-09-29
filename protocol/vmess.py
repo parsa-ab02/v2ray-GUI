@@ -103,3 +103,108 @@ class VmessProxy:
             }
 
         return [outbound]
+
+    def extract(self, outbound: dict)-> Proxy:
+        settings = outbound.get("settings", {})
+        vnext = settings.get("vnext", [{}])[0]
+
+        user = vnext.get("users", [{}])[0]
+
+        stream = outbound.get("streamSettings", {})
+
+        params = {}
+
+        if "alterId" in user:
+            params["alterId"] = user["alterId"]
+
+        if "security" in user:
+            params["security"] = user["security"]
+
+        network = stream.get("network")
+
+        if network:
+            params["type"] = network
+
+        security = stream.get("security")
+
+        if security == "tls":
+
+            params["tls"] = "tls"
+
+            tls = stream.get("tlsSettings", {})
+
+            if tls.get("serverName"):
+                params["sni"] = tls["serverName"]
+
+            if tls.get("fingerprint"):
+                params["fp"] = tls["fingerprint"]
+
+            if tls.get("alpn"):
+                params["alpn"] = ",".join(tls["alpn"])
+
+        if network == "ws":
+
+            ws = stream.get("wsSettings", {})
+
+            if ws.get("path"):
+                params["path"] = ws["path"]
+
+            headers = ws.get("headers", {})
+
+            if headers.get("Host"):
+                params["host"] = headers["Host"]
+
+        elif network == "grpc":
+
+            grpc = stream.get("grpcSettings", {})
+
+            if grpc.get("serviceName"):
+                params["serviceName"] = grpc["serviceName"]
+
+            if grpc.get("multiMode"):
+                params["mode"] = "multi"
+
+
+        elif network == "http":
+
+            http = stream.get("httpSettings", {})
+
+            if http.get("path"):
+                params["path"] = http["path"]
+
+            hosts = http.get("host", [])
+
+            if hosts:
+                params["host"] = hosts[0]
+
+
+        elif network == "quic":
+
+            quic = stream.get("quicSettings", {})
+
+            params["quicSecurity"] = quic.get(
+                "security",
+                "none"
+            )
+
+            params["key"] = quic.get(
+                "key",
+                ""
+            )
+
+            header = quic.get("header", {})
+
+            params["headerType"] = header.get(
+                "type",
+                "none"
+            )
+
+
+        return Proxy(
+            protocol="vmess",
+            server=vnext.get("address"),
+            port=int(vnext.get("port")),
+            username=user.get("id"),
+            tag=outbound.get("tag"),
+            extra_params=params
+        )

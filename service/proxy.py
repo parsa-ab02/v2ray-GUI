@@ -50,9 +50,6 @@ class Proxy:
     def from_configuration(cls, configuration: dict):
         ...
 
-        # extract args
-        # return cls(*args)
-
     def get_param(self, key: str, default=None):
         return self.extra_params.get(key, default)
 
