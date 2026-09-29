@@ -104,7 +104,8 @@ class VmessProxy:
 
         return [outbound]
 
-    def extract(self, outbound: dict)-> Proxy:
+    @classmethod
+    def extract(cls, outbound: dict)-> Proxy:
         settings = outbound.get("settings", {})
         vnext = settings.get("vnext", [{}])[0]
 
@@ -128,7 +129,6 @@ class VmessProxy:
         security = stream.get("security")
 
         if security == "tls":
-
             params["tls"] = "tls"
 
             tls = stream.get("tlsSettings", {})
@@ -143,7 +143,6 @@ class VmessProxy:
                 params["alpn"] = ",".join(tls["alpn"])
 
         if network == "ws":
-
             ws = stream.get("wsSettings", {})
 
             if ws.get("path"):
@@ -155,7 +154,6 @@ class VmessProxy:
                 params["host"] = headers["Host"]
 
         elif network == "grpc":
-
             grpc = stream.get("grpcSettings", {})
 
             if grpc.get("serviceName"):
@@ -166,7 +164,6 @@ class VmessProxy:
 
 
         elif network == "http":
-
             http = stream.get("httpSettings", {})
 
             if http.get("path"):
@@ -179,7 +176,6 @@ class VmessProxy:
 
 
         elif network == "quic":
-
             quic = stream.get("quicSettings", {})
 
             params["quicSecurity"] = quic.get(

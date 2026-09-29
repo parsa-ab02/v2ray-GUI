@@ -120,3 +120,119 @@ class VlessProxy:
             outbound["streamSettings"]["httpupgradeSettings"] = httpupgrade_settings
 
         return [outbound]
+
+    @classmethod
+    def extract(cls, outbound: dict) -> Proxy:
+        settings = outbound.get("settings", {})
+        vnext = settings.get("vnext", [{}])[0]
+
+        user = vnext.get("users", [{}])[0]
+
+        stream = outbound.get("streamSettings", {})
+
+        params = {}
+
+        if user.get("flow"):
+            params["flow"] = user["flow"]
+
+        network = stream.get("network")
+
+        if network:
+            params["type"] = network
+
+        security = stream.get("security")
+
+        if security:
+            params["security"] = security
+
+        if security == "tls":
+            tls = stream.get("tlsSettings", {})
+
+            if tls.get("serverName"):
+                params["sni"] = tls["serverName"]
+
+            if tls.get("fingerprint"):
+                params["fp"] = tls["fingerprint"]
+
+            if tls.get("alpn"):
+                params["alpn"] = ",".join(tls["alpn"])
+
+        elif security == "reality":
+            reality = stream.get("realitySettings", {})
+
+            if reality.get("serverName"):
+                params["sni"] = reality["serverName"]
+
+            if reality.get("publicKey"):
+                params["pbk"] = reality["publicKey"]
+
+            if reality.get("shortId"):
+                params["sid"] = reality["shortId"]
+
+            if reality.get("fingerprint"):
+                params["fp"] = reality["fingerprint"]
+
+            if reality.get("spiderX"):
+                params["spx"] = reality["spiderX"]
+
+        if network == "ws":
+            ws = stream.get("wsSettings", {})
+
+            if ws.get("path"):
+                params["path"] = ws["path"]
+
+            headers = ws.get("headers", {})
+
+            if headers.get("Host"):
+                params["host"] = headers["Host"]
+
+        elif network == "grpc":
+            grpc = stream.get("grpcSettings", {})
+
+            if grpc.get("serviceName"):
+                params["serviceName"] = grpc["serviceName"]
+
+            if grpc.get("multiMode"):
+                params["mode"] = "multi"
+
+        elif network == "http":
+            http = stream.get("httpSettings", {})
+
+            if http.get("path"):
+                params["path"] = http["path"]
+
+            hosts = http.get("host", [])
+
+            if hosts:
+                params["host"] = hosts[0]
+
+
+        elif network == "quic":
+            quic = stream.get("quicSettings", {})
+
+            params["security"] = quic.get(
+                "security",
+                "none"
+            )
+
+        elif network == "httpupgrade":
+            httpupgrade = stream.get(
+                "httpupgradeSettings",
+                {}
+            )
+
+            if httpupgrade.get("path"):
+                params["path"] = httpupgrade["path"]
+
+            if httpupgrade.get("host"):
+                params["host"] = httpupgrade["host"]
+
+
+        return Proxy(
+            protocol="vless",
+            server=vnext.get("address"),
+            port=int(vnext.get("port")),
+            username=user.get("id"),
+            tag=outbound.get("tag"),
+            extra_params=params
+        )
