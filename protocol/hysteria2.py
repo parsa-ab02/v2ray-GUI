@@ -69,3 +69,54 @@ class Hysteria2Proxy:
         outbound["streamSettings"] = {k: v for k, v in outbound["streamSettings"].items() if v}
 
         return [outbound]
+
+    @classmethod
+    def extract(cls, outbound: dict) -> Proxy:
+        settings = outbound.get("settings", {})
+
+        stream = outbound.get("streamSettings", {})
+
+        params = {}
+
+        tls = stream.get("tlsSettings", {})
+
+        if tls.get("serverName"):
+            params["sni"] = tls["serverName"]
+
+        if tls.get("alpn"):
+            params["alpn"] = ",".join(tls["alpn"])
+
+        if tls.get("allowInsecure"):
+            params["insecure"] = "1"
+
+
+        obfs = settings.get("obfs", {})
+
+        if obfs.get("type"):
+            params["obfs"] = obfs["type"]
+
+        if obfs.get("password"):
+            params["obfs-password"] = obfs["password"]
+
+        bandwidth = settings.get("bandwidth", {})
+
+        if bandwidth.get("down"):
+            params["downmbps"] = bandwidth["down"].replace(
+                " mbps",
+                ""
+            )
+
+        if bandwidth.get("up"):
+            params["upmbps"] = bandwidth["up"].replace(
+                " mbps",
+                ""
+            )
+
+        return Proxy(
+            protocol="hysteria2",
+            server=settings.get("server"),
+            port=int(settings.get("server_port")),
+            username=settings.get("password"),
+            tag=outbound.get("tag"),
+            extra_params=params
+        )
