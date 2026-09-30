@@ -48,10 +48,7 @@ class Proxy:
 
     @classmethod
     def from_configuration(cls, configuration: dict):
-        ...
-
-        # extract args
-        # return cls(*args)
+        return service.extractor.extract_proxy(configuration)
 
     def get_param(self, key: str, default=None):
         return self.extra_params.get(key, default)

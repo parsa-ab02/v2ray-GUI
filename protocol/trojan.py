@@ -104,3 +104,94 @@ class TrojanProxy:
         }
 
         return [outbound]
+
+    @classmethod
+    def extract(cls, outbound: dict) -> Proxy:
+        settings = outbound.get("settings", {})
+        server = settings.get("servers", [{}])[0]
+
+        stream = outbound.get("streamSettings", {})
+
+        params = {}
+
+        password = server.get("password")
+
+        network = stream.get("network")
+
+        if network:
+            params["type"] = network
+
+        security = stream.get("security")
+
+        if security:
+            params["security"] = security
+
+        if security == "tls":
+            tls = stream.get("tlsSettings", {})
+
+            if tls.get("serverName"):
+                params["sni"] = tls["serverName"]
+
+            if tls.get("fingerprint"):
+                params["fp"] = tls["fingerprint"]
+
+            if tls.get("alpn"):
+                params["alpn"] = ",".join(tls["alpn"])
+
+        elif security == "reality":
+            reality = stream.get("realitySettings", {})
+
+            if reality.get("serverName"):
+                params["sni"] = reality["serverName"]
+
+            if reality.get("publicKey"):
+                params["pbk"] = reality["publicKey"]
+
+            if reality.get("shortId"):
+                params["sid"] = reality["shortId"]
+
+            if reality.get("fingerprint"):
+                params["fp"] = reality["fingerprint"]
+
+            if reality.get("spiderX"):
+                params["spx"] = reality["spiderX"]
+
+        if network == "ws":
+            ws = stream.get("wsSettings", {})
+
+            if ws.get("path"):
+                params["path"] = ws["path"]
+
+            headers = ws.get("headers", {})
+
+            if headers.get("Host"):
+                params["host"] = headers["Host"]
+
+        elif network == "grpc":
+            grpc = stream.get("grpcSettings", {})
+
+            if grpc.get("serviceName"):
+                params["serviceName"] = grpc["serviceName"]
+
+            if grpc.get("multiMode"):
+                params["mode"] = "multi"
+
+        elif network == "http":
+            http = stream.get("httpSettings", {})
+
+            if http.get("path"):
+                params["path"] = http["path"]
+
+            hosts = http.get("host", [])
+
+            if hosts:
+                params["host"] = hosts[0]
+
+        return Proxy(
+            protocol="trojan",
+            server=server.get("address"),
+            port=int(server.get("port")),
+            username=password,
+            tag=outbound.get("tag"),
+            extra_params=params
+        )
