@@ -1,4 +1,3 @@
-from service.proxy import Proxy
 from service.protocol_registry import PROTOCOL_REGISTRY
 
 def get_outbound(configuration: dict):
@@ -28,7 +27,7 @@ def get_proxy_class(outbound: dict):
     
     return proxy_class
 
-def extract_proxy(configuration: dict)-> Proxy:
+def extract_proxy(configuration: dict):
     outbound = get_outbound(configuration)
     proxy_class = get_proxy_class(outbound)
 
