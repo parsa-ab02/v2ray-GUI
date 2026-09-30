@@ -21,26 +21,38 @@ class routingFrame():
 
     def Routing_profile_configuration(self, frame: ctk.CTkFrame):
         def on_enter(event):
-            if frame is not self.selected_profile_frame:
-                frame.configure(fg_color=rgb((0, 74, 173)))
+            frame.configure(fg_color=rgb((0, 74, 173)))
 
         def on_leave(event):
             if frame is not self.selected_profile_frame:
                 frame.configure(fg_color=rgb((19, 19, 54)))
 
         def on_press(event):
-            frame.configure(
-                fg_color=rgb((94, 23, 235))
-            )
+            frame.configure(fg_color=rgb((94, 23, 235)))
 
         def on_release(event):
-            if frame is not self.selected_profile_frame:
+            x = event.x
+            y = event.y
+
+            width = frame.winfo_width()
+            height = frame.winfo_height()
+
+            if 0 <= x <= width and 0 <= y <= height:
                 if self.selected_profile_frame is not None:
                     self.selected_profile_frame.configure(fg_color=rgb((19, 19, 54)))
-
-                self.selected_profile_frame = frame
-
+                if frame is not self.selected_profile_frame:
+                    self.selected_profile_frame = frame
                 frame.configure(fg_color=rgb((0, 74, 173)))
+            else :
+                frame.configure(fg_color=rgb((24, 0, 173)))
+
+            # if frame is not self.selected_profile_frame:
+            #     if self.selected_profile_frame is not None:
+            #         self.selected_profile_frame.configure(fg_color=rgb((19, 19, 54)))
+
+            #     self.selected_profile_frame = frame
+
+            #     frame.configure(fg_color=rgb((0, 74, 173)))
 
         widgets = [frame] + frame.winfo_children()
 

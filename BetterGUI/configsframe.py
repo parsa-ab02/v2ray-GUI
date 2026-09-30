@@ -11,10 +11,9 @@ class ConfigsFrame:
         self.app = app
         self.ConfigsFrame = ctk.CTkFrame(master=app , width=596 , height=798, border_width=2 , border_color="white" , fg_color=rgb((19, 19, 54)))
         self.ConfigsFrame.pack_propagate(False)
-        self.ConfigScrollBar = ctk.CTkScrollableFrame(master=ConfigsFrame, fg_color=rgb((19, 19, 54)))
+        self.ConfigScrollBar = ctk.CTkScrollableFrame(master=self.ConfigsFrame, fg_color=rgb((19, 19, 54)))
 
         self.ConfigScrollBar.pack(padx= 2 , pady= 2 , fill="both" , expand=True)
-        self.ConfigsFrame.place(x= 904, y= 2)
 
         self.Frames = list()
         self.selected_config_Frame : ctk.CTkFrame | None = None
@@ -46,15 +45,13 @@ class ConfigsFrame:
             frame.configure(fg_color=rgb((0, 74, 173)))
 
         def on_leave(event):
-            global selected_config_Frame
-            if frame is not selected_config_Frame:
+            if frame is not self.selected_config_Frame:
                 frame.configure(fg_color=rgb((19, 19, 54)))
 
         def on_press(event):
             frame.configure(fg_color=rgb((94, 23, 235)))
 
         def on_release(event):
-            global selected_config_Frame
             x = event.x
             y = event.y
 
@@ -62,11 +59,11 @@ class ConfigsFrame:
             height = frame.winfo_height()
 
             if 0 <= x <= width and 0 <= y <= height:
-                if selected_config_Frame is not None:
-                    selected_config_Frame.configure(fg_color=rgb((19, 19, 54)))
-                if frame is not selected_config_Frame:
-                    selected_config_Frame = frame
-                    self.createSelectedConfigInfo()
+                if self.selected_config_Frame is not None:
+                    self.selected_config_Frame.configure(fg_color=rgb((19, 19, 54)))
+                if frame is not self.selected_config_Frame:
+                    self.selected_config_Frame = frame
+                    self.create_selected_config_info()
                 self.TopSelected()
                 frame.configure(fg_color=rgb((0, 74, 173)))
             else:
@@ -79,20 +76,20 @@ class ConfigsFrame:
             widget.bind("<ButtonPress-1>", on_press)
             widget.bind("<ButtonRelease-1>", on_release)
 
-    def createSelectedConfigInfo(self):
+    def create_selected_config_info(self):
         self.SelectedConfigInfo.pack_propagate(False)
 
         for widget in self.SelectedConfigInfo.winfo_children():
             widget.destroy()
 
-        if selected_config_Frame is None:
+        if self.selected_config_Frame is None:
             ctk.CTkLabel(master=self.SelectedConfigInfo, text="no configs selected!", font=self.TagFont).place(x=150 , y=150)
         else:
-            ProxyInfo:dict = selected_config_Frame.proxy.to_dict()
+            ProxyInfo:dict = self.selected_config_Frame.proxy.to_dict()
 
             for row, (key, value) in enumerate(ProxyInfo.items()):
                 if key == "tag" and value:
-                    value = selected_config_Frame.proxy.display_tag
+                    value = self.selected_config_Frame.proxy.display_tag
 
                 ctk.CTkLabel(master=self.SelectedConfigInfo,text=f"{key}:",font=self.InfoFont).place(x=10, y=10 + row * 40)
 
@@ -105,7 +102,7 @@ class ConfigsFrame:
                 ctk.CTkLabel(master=self.SelectedConfigInfo,text=str(value),font=self.InfoFont).place(x=150, y=10 + row * 40)
 
 
-    def createConfigFrame(self, proxy: Proxy):
+    def create_config_frame(self, proxy: Proxy):
         configFrame = ctk.CTkFrame(master=self.ConfigScrollBar  , height=120, border_width=2 , border_color="white", fg_color=rgb((19, 19, 54)))
         configFrame.proxy = proxy
 
@@ -126,16 +123,19 @@ class ConfigsFrame:
         if index >= len(configs):
             return
 
-        self.createConfigFrame(configs[index])
+        self.create_config_frame(configs[index])
         self.app.after(1, lambda: self.create_all(index + 1))
 
     def show(self):
+        self.ConfigsFrame.place(x= 904, y= 2)
         self.app.after(0, self.create_all)
 
-    
-    def showConfigInfo(self):
+    def show_selected_config_info(self):
+        self.create_selected_config_info()
         self.SelectedConfigInfo.place(x=116  , y=2)
-        self.app.after(0, self.create_all)
+
+    def remove_selected_config_info(self):
+        self.SelectedConfigInfo.place_forget()
 
     def scroll_up(self, event):
         self.ConfigScrollBar._parent_canvas.yview_scroll(-1, "units")
