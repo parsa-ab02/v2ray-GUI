@@ -110,8 +110,14 @@ class ConfigsFrame:
         ctk.CTkLabel(master=configFrame, text=proxy.protocol, font=self.InfoFont).place(x=10,y=60)
         ctk.CTkLabel(master=configFrame, text=proxy.port, font=self.InfoFont).place(x=100,y=60)
 
+        def delete_proxy():
+            if self.selected_config_Frame is configFrame:
+                raise RuntimeError("can not delete , proxy is already selected")
+            Manager.remove(proxy)
+            configFrame.destroy()
+
         self.FrameConfiguration(configFrame)
-        DeleteButton = ctk.CTkButton(master=configFrame, width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10)
+        DeleteButton = ctk.CTkButton(master=configFrame, width=100 ,text= "",  height=100 , border_width=2 , border_color="white" , corner_radius=10, command=delete_proxy)
         buttonConfiguration(DeleteButton, self.deleteImage, self.deleteHoverImage, self.deleteClickedImage)
         DeleteButton.pack(side="right",padx=10,pady=10)
         self.Frames.append(configFrame)
