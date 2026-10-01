@@ -46,14 +46,6 @@ class routingFrame():
             else :
                 frame.configure(fg_color=rgb((24, 0, 173)))
 
-            # if frame is not self.selected_profile_frame:
-            #     if self.selected_profile_frame is not None:
-            #         self.selected_profile_frame.configure(fg_color=rgb((19, 19, 54)))
-
-            #     self.selected_profile_frame = frame
-
-            #     frame.configure(fg_color=rgb((0, 74, 173)))
-
         widgets = [frame] + frame.winfo_children()
 
         for widget in widgets:
