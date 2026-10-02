@@ -15,7 +15,7 @@ class Manager:
     Routings = {}
 
     @classmethod
-    def write(cls, proxy: proxy.Proxy, path: Path):
+    def write(cls, proxy: proxy.Proxy, path: Path = config_json):
         try:
             data_dir.mkdir(parents=True, exist_ok=True)
 

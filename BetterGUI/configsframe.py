@@ -66,6 +66,7 @@ class ConfigsFrame:
                     self.create_selected_config_info()
                 self.TopSelected()
                 frame.configure(fg_color=rgb((0, 74, 173)))
+                Manager.write(frame.proxy)
             else:
                 frame.configure(fg_color=rgb((24, 0, 173)))
 
