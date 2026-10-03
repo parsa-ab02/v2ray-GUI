@@ -3,7 +3,7 @@ from utils import rgb
 from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-from service.manager import Manager
+from service import routing
 
 class routingFrame():
     def __init__(self, app: ctk.CTk):
@@ -14,7 +14,6 @@ class routingFrame():
         self.scrollbar.pack(padx= 2, pady= 2, fill="both", expand=True)
         self.name_font = ctk.CTkFont(family="Fredoka", size=30)
         self.info_font = ctk.CTkFont(family="Fredoka", size=18)
-        # self.selected_profile = Manager.Routings["full_tunnel"]
         self.selected_profile_frame: ctk.CTkFrame | None = None
 
         self.profile_frames = []
@@ -42,6 +41,7 @@ class routingFrame():
                     self.selected_profile_frame.configure(fg_color=rgb((19, 19, 54)))
                 if frame is not self.selected_profile_frame:
                     self.selected_profile_frame = frame
+                    routing.set_profile(name=self.selected_profile_frame.name)
                 frame.configure(fg_color=rgb((0, 74, 173)))
             else :
                 frame.configure(fg_color=rgb((24, 0, 173)))
@@ -58,6 +58,7 @@ class routingFrame():
     def create_routing_profile_frame(self, name, routing_dict, index):
         profile_frame = ctk.CTkFrame(master=self.scrollbar,width=243,height=250,border_width=2,border_color="white",fg_color=rgb((19, 19, 54)))
         ctk.CTkLabel(master=profile_frame,text=name, font=self.name_font).place(x=5, y=10)
+        profile_frame.name = name
 
         current_y = 50
         for key, value in routing_dict.items():
@@ -92,7 +93,7 @@ class routingFrame():
         self.profile_frames.append(profile_frame)
 
     def create_all(self, index=0):
-        profiles = Manager.Routings
+        profiles = routing.ROUTING_PROFILES
 
         if index >= len(profiles):
                 return

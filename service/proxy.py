@@ -21,15 +21,6 @@ class Proxy:
 
         self.extra_params = extra_params or {}
 
-        self.structure = {
-            "log":{
-                "loglevel": "warning"
-            },
-            "inbounds": service.inbounds.get_inbounds(),
-            "outbounds": service.proxyHandler.build_outbound(self),
-            "routing": service.routing.get_routing(),
-        }
-
     @classmethod
     def from_URL(cls, URL: str):
         P = urlparse(URL)
@@ -97,3 +88,13 @@ class Proxy:
         reshaped = arabic_reshaper.reshape(self.unquoted_tag)
 
         return get_display(reshaped)
+
+    def get_structure(self):
+        return {
+            "log":{
+                "loglevel": "warning"
+            },
+            "inbounds": service.inbounds.get_inbounds(),
+            "outbounds": service.proxyHandler.build_outbound(self),
+            "routing": service.routing.get_profile(),
+        }

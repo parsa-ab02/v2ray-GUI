@@ -1,6 +1,7 @@
 import json
 from service import proxy
 from pathlib import Path
+from service import routing
 
 root = Path(__file__).resolve().parent.parent
 data_dir = root / "data"
@@ -12,7 +13,6 @@ routing_saves = data_dir / "routing.json"
 
 class Manager:
     Proxies = []
-    Routings = {}
 
     @classmethod
     def write(cls, proxy: proxy.Proxy, path: Path = config_json):
@@ -20,9 +20,10 @@ class Manager:
             data_dir.mkdir(parents=True, exist_ok=True)
 
             with open(path, "w", encoding="utf-8") as file:
-                json.dump(proxy.structure, file, ensure_ascii=False, indent=4)
+                json.dump(proxy.get_structure(), file, ensure_ascii=False, indent=4)
 
         except Exception as e:
+            print(f"error: {e}")
             return f"error: {e}"
 
     @classmethod
@@ -48,16 +49,28 @@ class Manager:
                 prxy = proxy.Proxy(**kwargs)
                 cls.Proxies.append(prxy)
 
-            with open(routing_saves, "r", encoding="utf-8") as file:
-                cls.Routings = json.load(file)
-
         except FileNotFoundError:
             cls.Proxies = []
 
         except Exception as e:
             return f"error: {e}"
 
-        return cls.Proxies
+    @classmethod
+    def read_routings(cls):
+        try:
+            with open(routing_saves, "r", encoding="utf-8") as file:
+                routing.ROUTING_PROFILES = json.load(file)
+        except FileNotFoundError:
+            routing.ROUTING_PROFILES = {
+                "full_tunnel": {
+                "domainStrategy": "AsIs",
+                "rules": []
+                },
+            }
+        except Exception as e:
+            return f"error: {e}"
+        finally:
+            routing.Routing_profile = routing.get_routing("full_tunnel")
 
     @classmethod
     def save(cls):

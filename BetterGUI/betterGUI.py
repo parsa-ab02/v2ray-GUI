@@ -20,6 +20,7 @@ root = Path(__file__).resolve().parent
 icons_directory = root / "icons"
 
 Manager.read_all()
+Manager.read_routings()
 
 current_page = CurrentPage.Home
 def ShowHome():
