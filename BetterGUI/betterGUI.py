@@ -101,4 +101,10 @@ controller.configs_frame.show()
 #---------------- Routing Frame --------------------
 routings_frame = routingFrame(app=app)
 
+def on_close():
+    Manager.save()
+    app.destroy()
+
+app.protocol("WM_DELETE_WINDOW", on_close)
+
 app.mainloop()

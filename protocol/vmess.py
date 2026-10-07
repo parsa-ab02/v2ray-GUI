@@ -1,10 +1,13 @@
+import json
+
 from service.proxy import Proxy
 
 
 class VmessProxy:
     known_params = {
         "alterId", "security", "type", "tls", "sni", "fp", "alpn",
-        "path", "host", "serviceName", "mode", "quicSecurity", "key", "headerType"
+        "path", "host", "serviceName", "mode", "quicSecurity", "key", "headerType",
+        "extra", "xPaddingBytes", "x_padding_bytes"
     }
 
     def __init__(self, proxy: Proxy):
@@ -24,6 +27,11 @@ class VmessProxy:
         self.quic_security = proxy.get_param("quicSecurity", "none")
         self.quic_key = proxy.get_param("key", "")
         self.quic_header = proxy.get_param("headerType", "none")
+        self.xhttp_extra = self._parse_xhttp_extra(proxy.get_param("extra"))
+
+        padding = proxy.get_param("xPaddingBytes", proxy.get_param("x_padding_bytes"))
+        if padding is not None and "xPaddingBytes" not in self.xhttp_extra:
+            self.xhttp_extra["xPaddingBytes"] = padding
 
         self.extra = proxy.get_extra_params(self.known_params)
 
@@ -101,6 +109,20 @@ class VmessProxy:
                     "type": self.quic_header
                 }
             }
+
+        if self.type == "xhttp":
+            xhttp_settings = {
+                "path": self.path or "/",
+                "mode": self.mode or "auto"
+            }
+
+            if self.host:
+                xhttp_settings["host"] = self.host
+
+            if self.xhttp_extra:
+                xhttp_settings["extra"] = self.xhttp_extra
+
+            outbound["streamSettings"]["xhttpSettings"] = xhttp_settings
 
         return [outbound]
 
@@ -195,6 +217,32 @@ class VmessProxy:
                 "none"
             )
 
+        elif network == "xhttp":
+            xhttp = stream.get("xhttpSettings", {})
+
+            if xhttp.get("path"):
+                params["path"] = xhttp["path"]
+
+            if xhttp.get("host"):
+                params["host"] = xhttp["host"]
+
+            if xhttp.get("mode"):
+                params["mode"] = xhttp["mode"]
+
+            extra = xhttp.get("extra")
+            if extra is None:
+                # Newer Xray configs may contain the same options directly
+                # in xhttpSettings rather than in the share-link ``extra``.
+                extra = {
+                    key: value for key, value in xhttp.items()
+                    if key not in {"path", "host", "mode"}
+                }
+
+            if extra:
+                params["extra"] = json.dumps(
+                    extra, separators=(",", ":")
+                )
+
 
         return Proxy(
             protocol="vmess",
@@ -204,3 +252,21 @@ class VmessProxy:
             tag=outbound.get("tag"),
             extra_params=params
         )
+
+    @staticmethod
+    def _parse_xhttp_extra(value):
+        if not value:
+            return {}
+
+        if isinstance(value, dict):
+            return dict(value)
+
+        try:
+            extra = json.loads(value)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValueError("XHTTP extra must be a JSON object") from exc
+
+        if not isinstance(extra, dict):
+            raise ValueError("XHTTP extra must be a JSON object")
+
+        return extra
