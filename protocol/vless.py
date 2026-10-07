@@ -1,10 +1,13 @@
+import json
+
 from service.proxy import Proxy
 
 
 class VlessProxy:
     known_params = {
         "type", "security", "sni", "fp", "pbk", "sid", "spx", "flow",
-        "path", "host", "serviceName", "alpn", "mode"
+        "path", "host", "serviceName", "alpn", "mode", "extra",
+        "xPaddingBytes", "x_padding_bytes"
     }
 
     def __init__(self, proxy: Proxy):
@@ -23,6 +26,13 @@ class VlessProxy:
         self.service_name = proxy.get_param("serviceName")
         self.alpn = proxy.get_param("alpn")
         self.mode = proxy.get_param("mode")
+        self.xhttp_extra = self._parse_xhttp_extra(proxy.get_param("extra"))
+
+        # A few share-link generators expose this frequently used option as a
+        # top-level query parameter instead of putting it in ``extra``.
+        padding = proxy.get_param("xPaddingBytes", proxy.get_param("x_padding_bytes"))
+        if padding is not None and "xPaddingBytes" not in self.xhttp_extra:
+            self.xhttp_extra["xPaddingBytes"] = padding
 
         self.extra = proxy.get_extra_params(self.known_params)
 
@@ -118,6 +128,20 @@ class VlessProxy:
                 httpupgrade_settings["host"] = self.host
 
             outbound["streamSettings"]["httpupgradeSettings"] = httpupgrade_settings
+
+        if self.type == "xhttp":
+            xhttp_settings = {
+                "path": self.path or "/",
+                "mode": self.mode or "auto"
+            }
+
+            if self.host:
+                xhttp_settings["host"] = self.host
+
+            if self.xhttp_extra:
+                xhttp_settings["extra"] = self.xhttp_extra
+
+            outbound["streamSettings"]["xhttpSettings"] = xhttp_settings
 
         return [outbound]
 
@@ -227,6 +251,32 @@ class VlessProxy:
             if httpupgrade.get("host"):
                 params["host"] = httpupgrade["host"]
 
+        elif network == "xhttp":
+            xhttp = stream.get("xhttpSettings", {})
+
+            if xhttp.get("path"):
+                params["path"] = xhttp["path"]
+
+            if xhttp.get("host"):
+                params["host"] = xhttp["host"]
+
+            if xhttp.get("mode"):
+                params["mode"] = xhttp["mode"]
+
+            extra = xhttp.get("extra")
+            if extra is None:
+                # Newer Xray configs may contain the same options directly
+                # in xhttpSettings rather than in the share-link ``extra``.
+                extra = {
+                    key: value for key, value in xhttp.items()
+                    if key not in {"path", "host", "mode"}
+                }
+
+            if extra:
+                params["extra"] = json.dumps(
+                    extra, separators=(",", ":")
+                )
+
 
         return Proxy(
             protocol="vless",
@@ -236,3 +286,21 @@ class VlessProxy:
             tag=outbound.get("tag"),
             extra_params=params
         )
+
+    @staticmethod
+    def _parse_xhttp_extra(value):
+        if not value:
+            return {}
+
+        if isinstance(value, dict):
+            return dict(value)
+
+        try:
+            extra = json.loads(value)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValueError("XHTTP extra must be a JSON object") from exc
+
+        if not isinstance(extra, dict):
+            raise ValueError("XHTTP extra must be a JSON object")
+
+        return extra

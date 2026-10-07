@@ -11,6 +11,10 @@ data_saves = data_dir / "saves.json"
 routing_saves = data_dir / "routing.json"
 
 
+class EmptyRoutingFileError(Exception):
+    pass
+
+
 class Manager:
     Proxies = []
 
@@ -59,18 +63,34 @@ class Manager:
     def read_routings(cls):
         try:
             with open(routing_saves, "r", encoding="utf-8") as file:
-                routing.ROUTING_PROFILES = json.load(file)
-        except FileNotFoundError:
+                contents = file.read()
+
+            if not contents.strip():
+                raise EmptyRoutingFileError("routing profile file is empty")
+
+            routing.ROUTING_PROFILES = json.loads(contents)
+            if not isinstance(routing.ROUTING_PROFILES, dict):
+                raise ValueError("routing profile file must contain a JSON object")
+
+        except (FileNotFoundError, EmptyRoutingFileError):
             routing.ROUTING_PROFILES = {
                 "full_tunnel": {
-                "domainStrategy": "AsIs",
-                "rules": []
+                    "domainStrategy": "AsIs",
+                    "rules": []
                 },
             }
         except Exception as e:
             return f"error: {e}"
-        finally:
-            routing.Routing_profile = routing.get_routing("full_tunnel")
+
+        if not routing.ROUTING_PROFILES:
+            routing.ROUTING_PROFILES = {
+                "full_tunnel": {
+                    "domainStrategy": "AsIs",
+                    "rules": []
+                },
+            }
+
+        routing.Routing_profile = routing.get_routing("full_tunnel")
 
     @classmethod
     def save(cls):
@@ -83,7 +103,7 @@ class Manager:
                 json.dump(listof_proxies_dicts, file, ensure_ascii=False, indent=4)
 
             with open(routing_saves, "w", encoding="utf-8") as file:
-                json.dump(cls.Routings, file, ensure_ascii=False, indent=4)
+                json.dump(routing.ROUTING_PROFILES, file, ensure_ascii=False, indent=4)
 
         except Exception as e:
             return f"error: {e}"
